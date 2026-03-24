@@ -169,11 +169,13 @@ router.get('/cards', auth, async (req, res) => {
 });
 
 router.post('/cards', auth, async (req, res) => {
-  const { name, image_url, time, location, owner_nickname } = req.body;
+  const { name, image, image_url, time, location, owner, owner_nickname } = req.body;
   const db = await getDb();
   const id = 'c_' + Date.now();
+  const finalImageUrl = image || image_url;
+  const finalOwner = owner || owner_nickname;
   await db.run('INSERT INTO material_cards (id, user_id, name, image_url, time, location, owner_nickname) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [id, req.user.id, name, image_url, time, location, owner_nickname]);
+    [id, req.user.id, name, finalImageUrl, time, location, finalOwner]);
   res.json({ success: true, id });
 });
 
