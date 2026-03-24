@@ -95,11 +95,16 @@ router.get('/posts', async (req, res) => {
     p.author = { id: p.user_id, name: p.author_name, avatar: p.author_avatar };
     const imgs = await db.all('SELECT image_url FROM post_images WHERE post_id = ?', [p.id]);
     p.images = imgs.map(i => i.image_url);
-    p.materialCards = await db.all(`
+    const mCards = await db.all(`
       SELECT mc.* FROM material_cards mc
       JOIN post_card_relations pcr ON mc.id = pcr.card_id
       WHERE pcr.post_id = ?
     `, [p.id]);
+    mCards.forEach(c => {
+      c.owner = c.owner_nickname;
+      c.image = c.image_url;
+    });
+    p.materialCards = mCards;
   }
   res.json(posts);
 });
@@ -156,7 +161,10 @@ router.delete('/posts/:id', auth, async (req, res) => {
 router.get('/cards', auth, async (req, res) => {
   const db = await getDb();
   const cards = await db.all('SELECT * FROM material_cards WHERE user_id = ? ORDER BY created_at DESC', [req.user.id]);
-  cards.forEach(c => c.owner = c.owner_nickname); // Map to match frontend expectations
+  cards.forEach(c => {
+    c.owner = c.owner_nickname; 
+    c.image = c.image_url;
+  }); // Map to match frontend expectations
   res.json(cards);
 });
 
