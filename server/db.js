@@ -23,6 +23,7 @@ export async function initDb() {
       id TEXT PRIMARY KEY,
       phone TEXT UNIQUE,
       name TEXT,
+      password TEXT,
       avatar TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
@@ -85,5 +86,11 @@ export async function initDb() {
       FOREIGN KEY(chat_id) REFERENCES chats(id)
     );
   `);
+  
+  try {
+    await db.exec('ALTER TABLE users ADD COLUMN password TEXT');
+  } catch (e) {
+    // Column likely already exists
+  }
   console.log('Database initialized successfully.');
 }

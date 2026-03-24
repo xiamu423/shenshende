@@ -27,21 +27,51 @@ export const auth = (req, res, next) => {
   }
 };
 
+router.post('/auth/register', async (req, res) => {
+  const { phone, password } = req.body;
+  if (!phone || !password) return res.status(400).json({ error: '请输入账号和密码' });
+  
+  if (!/^[a-zA-Z0-9_]{3,}$/.test(phone)) {
+    return res.status(400).json({ error: '账号最少三个字符，且只能包含字母、数字或下划线' });
+  }
+  if (password.length < 6) {
+    return res.status(400).json({ error: '密码至少需要六位' });
+  }
+
+  const db = await getDb();
+  
+  let existing = await db.get('SELECT * FROM users WHERE phone = ?', [phone]);
+  if (existing) {
+    if (!existing.password) {
+      await db.run('UPDATE users SET password = ? WHERE id = ?', [password, existing.id]);
+      const token = jwt.sign({ id: existing.id, phone }, SECRET, { expiresIn: '7d' });
+      delete existing.password;
+      return res.json({ user: existing, token });
+    }
+    return res.status(400).json({ error: '该账号已注册，请点下面去登录' });
+  }
+  
+  const id = 'u_' + Date.now();
+  const name = phone;
+  const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`;
+  await db.run('INSERT INTO users (id, phone, name, avatar, password) VALUES (?, ?, ?, ?, ?)', [id, phone, name, avatar, password]);
+  
+  const token = jwt.sign({ id, phone }, SECRET, { expiresIn: '7d' });
+  res.json({ user: { id, phone, name, avatar }, token });
+});
+
 router.post('/auth/login', async (req, res) => {
-  const { phone } = req.body;
-  if (!phone) return res.status(400).json({ error: 'Phone required' });
+  const { phone, password } = req.body;
+  if (!phone || !password) return res.status(400).json({ error: '请输入账号和密码' });
   const db = await getDb();
   let user = await db.get('SELECT * FROM users WHERE phone = ?', [phone]);
   
-  if (!user) {
-    const id = 'u_' + Date.now();
-    const name = `生米_${phone.toString().slice(-4)}`;
-    const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`;
-    await db.run('INSERT INTO users (id, phone, name, avatar) VALUES (?, ?, ?, ?)', [id, phone, name, avatar]);
-    user = { id, phone, name, avatar };
+  if (!user || user.password !== password) {
+    return res.status(401).json({ error: '账号或密码错误' });
   }
   
   const token = jwt.sign({ id: user.id, phone: user.phone }, SECRET, { expiresIn: '7d' });
+  delete user.password;
   res.json({ user, token });
 });
 

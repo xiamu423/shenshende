@@ -23,10 +23,10 @@ export function MockProvider({ children }) {
     'Authorization': `Bearer ${localStorage.getItem('token')}`
   });
 
-  const loginAuth = async (phone) => {
+  const loginAuth = async (phone, password) => {
     const res = await fetch('/api/auth/login', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone })
+      body: JSON.stringify({ phone, password })
     });
     if (res.ok) {
       const data = await res.json();
@@ -37,6 +37,23 @@ export function MockProvider({ children }) {
       return true;
     }
     return false;
+  };
+
+  const registerAuth = async (phone, password) => {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, password })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      setCurrentUser(data.user);
+      setIsLoggedIn(true);
+      return true;
+    }
+    const err = await res.json();
+    return err.error || false;
   };
 
   const logout = () => {
@@ -171,7 +188,7 @@ export function MockProvider({ children }) {
 
   return (
     <MockContext.Provider value={{
-      currentUser, isLoggedIn, loginAuth, logout,
+      currentUser, isLoggedIn, loginAuth, registerAuth, logout,
       posts, addPost, togglePostStatus, deletePost,
       myCards, addCard, deleteCard,
       chats, togglePinChat, sendMessage, findOrCreateChat, getChatMessages,
