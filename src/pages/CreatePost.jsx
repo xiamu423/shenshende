@@ -18,18 +18,13 @@ export default function CreatePost() {
     if (title.length > 15) return alert('标题最多15字');
     if (content.length > 1000) return alert('正文最多1000字');
     
-    const newPost = {
-      id: 'p' + Date.now(),
-      author: currentUser,
+    addPost({
       title,
       content,
       status,
-      time: Date.now(),
       images,
-      materialCards: selectedCards.map(id => myCards.find(c => c.id === id))
-    };
-    
-    addPost(newPost);
+      materialCardIds: selectedCards
+    });
     nav('/community');
   };
 
