@@ -3,12 +3,15 @@ import multer from 'multer';
 import jwt from 'jsonwebtoken';
 import { getDb } from './db.js';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 const router = express.Router();
 const SECRET = 'shenshende_secret_2026';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const uploadsDir = path.join(__dirname, 'uploads');
 
 const storage = multer.diskStorage({
-  destination: 'uploads/',
+  destination: uploadsDir,
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
   }
