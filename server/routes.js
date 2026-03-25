@@ -53,7 +53,7 @@ router.post('/auth/register', async (req, res) => {
   
   const id = 'u_' + Date.now();
   const name = phone;
-  const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`;
+  const avatar = '/uploads/default_avatar.png';
   await db.run('INSERT INTO users (id, phone, name, avatar, password) VALUES (?, ?, ?, ?, ?)', [id, phone, name, avatar, password]);
   
   const token = jwt.sign({ id, phone }, SECRET, { expiresIn: '7d' });
