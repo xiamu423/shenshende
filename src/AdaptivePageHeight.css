@@ -1,0 +1,50 @@
+/* Chat: fill short viewports, but grow naturally when conversations exceed one screen. */
+.layout-content:has(.chat-list-page) {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-content:has(.chat-list-page) .chat-list-page {
+  flex: 1 0 auto;
+  min-height: 0;
+}
+
+.layout-content:has(.chat-list-page) .site-footer {
+  margin-top: auto;
+  flex: none;
+}
+
+/* Profile: the whole route, filing and bottom navigation always fit in one viewport. */
+.layout-content:has(.profile-page) {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-content:has(.profile-page) .profile-page {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  padding-bottom: 6px;
+}
+
+.layout-content:has(.profile-page) .site-footer {
+  display: none;
+}
+
+@media (max-height: 720px) {
+  .profile-page .profile-content { transform: scale(.92); transform-origin: top center; width: min(826px, calc(100% - 16px)); }
+  .profile-page .profile-navigation { margin-top: 10px; gap: 8px; }
+  .profile-page .profile-entry { padding-top: 12px; padding-bottom: 12px; }
+  .profile-page .profile-logout { margin-top: 10px; }
+}
+
+@media (min-width: 1080px) {
+  .layout-content:has(.profile-page) .site-footer,
+  .layout-content:has(.chat-list-page) .site-footer {
+    padding-bottom: 18px;
+  }
+}

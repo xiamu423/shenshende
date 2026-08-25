@@ -1,0 +1,2 @@
+.status-stamp{display:block;width:112px;height:auto;flex:0 0 auto;object-fit:contain;object-position:center;filter:drop-shadow(0 3px 5px rgba(41,74,141,.12));transform-origin:center;transition:transform .26s var(--ease-out),opacity .2s ease}.status-stamp.is-finished{filter:drop-shadow(0 3px 4px rgba(91,98,108,.1))}.postcard:hover .status-stamp{transform:rotate(1deg) scale(1.025)}
+@media(max-width:380px){.status-stamp{width:98px}}

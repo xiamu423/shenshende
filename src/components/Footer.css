@@ -1,0 +1,33 @@
+.site-footer {
+  padding: 20px 0 100px; /* Extra bottom padding for BottomNav */
+  text-align: center;
+  font-size: 12px;
+  color: #888;
+  background-color: transparent;
+  border-top: 1px dashed var(--border);
+}
+
+.filing-info {
+  margin-bottom: 8px;
+}
+
+.filing-info a {
+  color: #888;
+  text-decoration: none;
+}
+
+.filing-info a:hover {
+  text-decoration: underline;
+}
+
+.ga-filing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.ga-icon {
+  width: 16px;
+  height: 16px;
+}

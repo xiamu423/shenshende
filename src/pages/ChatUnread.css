@@ -1,0 +1,2 @@
+.conversation-avatar i { display: none; }
+.conversation-unread { min-width: 21px; height: 21px; padding: 0 6px; flex: none; display: grid; place-items: center; border-radius: 11px; color: #fff; background: var(--primary); font-size: 9px; font-weight: 750; box-shadow: 0 4px 10px rgba(41,74,141,.22); }

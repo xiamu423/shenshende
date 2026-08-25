@@ -1,0 +1,7 @@
+.ticket-hero { cursor: zoom-in; }
+.ticket-hero-shade, .ticket-hero-title, .ticket-badges, .image-count { pointer-events: none; }
+.image-arrow { z-index: 4; cursor: pointer; }
+.image-lightbox { position: fixed; inset: 0; z-index: 20; padding: 28px; display: flex; align-items: center; justify-content: center; background: rgba(5,10,22,.94); backdrop-filter: blur(14px); animation: fadeIn .22s ease; }
+.image-lightbox img { max-width: 100%; max-height: calc(100vh - 56px); width: auto; height: auto; object-fit: contain; border-radius: 8px; box-shadow: 0 20px 70px rgba(0,0,0,.45); }
+.image-lightbox button { position: absolute; right: 22px; top: 22px; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: rgba(255,255,255,.13); }
+@media(max-width:600px) { .image-lightbox { padding: 14px; } .image-lightbox img { max-height: calc(100vh - 28px); border-radius: 4px; } }

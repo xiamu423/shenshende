@@ -1,0 +1,6 @@
+.material-top-tags{display:none;position:absolute;right:7px;top:7px;align-items:center;gap:4px;max-width:calc(100% - 14px)}
+.material-top-tags span,.material-top-tags b{display:block;min-width:0;max-width:115px;padding:4px 7px;border-radius:8px;color:#fff;background:rgba(34,66,148,.92);backdrop-filter:blur(6px);font-size:8px;font-weight:700;line-height:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.materials-1 .material-top-tags,.materials-2 .material-top-tags,.materials-3 .postcard-material:first-child .material-top-tags{display:flex}
+.materials-1 .material-method,.materials-2 .material-method,.materials-3 .postcard-material:first-child .material-method{display:none}
+.materials-1 .material-copy small,.materials-2 .material-copy small,.materials-3 .postcard-material:first-child .material-copy small{display:none}
+.materials-3 .postcard-material:not(:first-child) .material-copy em{display:block;justify-self:end;font-size:8px;white-space:nowrap}

@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+server/node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+server/.env
+server/.env.*
+!server/.env.example
+*.key
+*.pem
+cert_b64.txt
+key_b64.txt
+
+# Runtime data
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+server/uploads/
+server/logs/
+
+# Local deployment helpers
+deploy.mjs
+
+# Editor / operating system files
+.DS_Store
+.idea/
+.vscode/
+
+# Local source-material folders
+头像/
+新证书/
+
+# Logs and temporary files
+*.log
+*.tmp
+coverage/
