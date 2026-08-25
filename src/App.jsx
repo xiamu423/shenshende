@@ -1,4 +1,5 @@
-import { RouterProvider, createBrowserRouter, Outlet, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { RouterProvider, createBrowserRouter, Outlet, Navigate, useLocation } from 'react-router-dom';
 import BottomNav from './components/BottomNav';
 import Footer from './components/Footer';
 import Community from './pages/Community';
@@ -18,6 +19,18 @@ import './App.css';
 import './AdaptivePageHeight.css';
 
 function MainLayout() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const currentPath = `${location.pathname}${location.search}${location.hash}`;
+    const keepMainTabAsHistoryBoundary = () => {
+      const nextPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      if (nextPath !== currentPath) window.history.forward();
+    };
+    window.addEventListener('popstate', keepMainTabAsHistoryBoundary);
+    return () => window.removeEventListener('popstate', keepMainTabAsHistoryBoundary);
+  }, [location.pathname, location.search, location.hash]);
+
   return (
     <>
       <div className="layout-content">

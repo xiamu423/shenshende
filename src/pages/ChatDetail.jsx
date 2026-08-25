@@ -32,7 +32,7 @@ export default function ChatDetail() {
   const blockChat=async()=>{await toggleBlockChat(chat.id);setMenuOpen(false)};
 
   return <div className="chat-detail-page animate-fade-in">
-    <header className="chat-detail-header"><button onClick={()=>nav('/chat')}><ChevronLeft size={23}/></button><h1>{chat.user.name}</h1><button className="chat-more-button" onClick={()=>setMenuOpen(value=>!value)} aria-label="更多操作"><MoreHorizontal size={21}/></button>
+    <header className="chat-detail-header"><button onClick={()=>nav('/chat',{replace:true})}><ChevronLeft size={23}/></button><h1>{chat.user.name}</h1><button className="chat-more-button" onClick={()=>setMenuOpen(value=>!value)} aria-label="更多操作"><MoreHorizontal size={21}/></button>
       {menuOpen&&<div className="chat-more-menu"><button onClick={openRemark}><UserRound size={15}/>修改备注</button><button onClick={pinChat}><Pin size={15}/>{chat.isPinned?'取消置顶':'置顶'}</button><button className={chat.isBlocked?'active-block':''} onClick={blockChat}><Ban size={15}/>{chat.isBlocked?'取消拉黑':'拉黑'}</button></div>}
     </header>
 
