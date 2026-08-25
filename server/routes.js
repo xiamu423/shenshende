@@ -6,10 +6,28 @@ import { generateDefaultNickname } from './defaultNickname.js';
 import { generateDefaultAvatar } from './defaultAvatar.js';
 import { config } from './config.js';
 import path from 'path';
+import { promisify } from 'node:util';
+import { randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
 
 const router = express.Router();
 const SECRET = config.jwtSecret;
 const uploadsDir = config.uploadsDir;
+const scryptAsync = promisify(scrypt);
+
+async function hashPassword(password) {
+  const salt = randomBytes(16).toString('hex');
+  const derivedKey = await scryptAsync(password, salt, 64);
+  return `scrypt$${salt}$${derivedKey.toString('hex')}`;
+}
+
+async function verifyPassword(password, storedPassword) {
+  if (!storedPassword?.startsWith('scrypt$')) return storedPassword === password;
+  const [, salt, storedHex] = storedPassword.split('$');
+  if (!salt || !storedHex || !/^[a-f0-9]+$/i.test(storedHex)) return false;
+  const storedKey = Buffer.from(storedHex, 'hex');
+  const derivedKey = await scryptAsync(password, salt, storedKey.length);
+  return storedKey.length === derivedKey.length && timingSafeEqual(storedKey, derivedKey);
+}
 
 const storage = multer.diskStorage({
   destination: uploadsDir,
@@ -106,7 +124,7 @@ router.post('/auth/register', async (req, res) => {
   let existing = await db.get('SELECT * FROM users WHERE phone = ?', [phone]);
   if (existing) {
     if (!existing.password) {
-      await db.run('UPDATE users SET password = ? WHERE id = ?', [password, existing.id]);
+      await db.run('UPDATE users SET password = ? WHERE id = ?', [await hashPassword(password), existing.id]);
       const token = jwt.sign({ id: existing.id, phone }, SECRET, { expiresIn: '7d' });
       delete existing.password;
       return res.json({ user: existing, token });
@@ -117,7 +135,7 @@ router.post('/auth/register', async (req, res) => {
   const id = 'u_' + Date.now();
   const name = generateDefaultNickname();
   const avatar = generateDefaultAvatar();
-  await db.run('INSERT INTO users (id, phone, name, avatar, password) VALUES (?, ?, ?, ?, ?)', [id, phone, name, avatar, password]);
+  await db.run('INSERT INTO users (id, phone, name, avatar, password) VALUES (?, ?, ?, ?, ?)', [id, phone, name, avatar, await hashPassword(password)]);
   
   const token = jwt.sign({ id, phone }, SECRET, { expiresIn: '7d' });
   res.json({ user: { id, phone, name, avatar }, token });
@@ -137,8 +155,11 @@ router.post('/auth/login', async (req, res) => {
   const db = await getDb();
   let user = await db.get('SELECT * FROM users WHERE phone = ?', [phone]);
   
-  if (!user || user.password !== password) {
+  if (!user || !(await verifyPassword(password, user.password))) {
     return res.status(401).json({ error: '账号或密码错误' });
+  }
+  if (!user.password.startsWith('scrypt$')) {
+    await db.run('UPDATE users SET password = ? WHERE id = ?', [await hashPassword(password), user.id]);
   }
   
   const token = jwt.sign({ id: user.id, phone: user.phone }, SECRET, { expiresIn: '7d' });

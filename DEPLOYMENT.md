@@ -2,7 +2,7 @@
 
 ## Directories and permissions
 
-Run the API as a dedicated `comino` system user. Keep application code in `/var/www/comino-world`; persistent data must live outside the release directory:
+Run the API as a dedicated `comino` system user. Keep application code in `/var/www/comino-world/release`; persistent data must live outside the release directory:
 
 ```bash
 sudo install -d -o comino -g comino -m 750 /var/lib/comino-world /var/lib/comino-world/uploads
@@ -17,9 +17,9 @@ Generate `JWT_SECRET` with `openssl rand -hex 32`. Never commit the production e
 ## Build and process supervision
 
 ```bash
-cd /var/www/comino-world
+cd /var/www/comino-world/release
 npm ci && npm run build
-cd server && npm ci --omit=dev && cd ..
+cd server && npm_config_build_from_source=true npm ci --omit=dev && cd ..
 set -a; source /etc/comino-world.env; set +a
 pm2 start ecosystem.config.cjs --env production
 pm2 save
