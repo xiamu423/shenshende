@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { CalendarDays, ChevronLeft, ChevronRight, MapPin, Package, Star, UserRound, X } from 'lucide-react';
 import { formatCardTime } from '../constants/materialCard';
 import { useMockData } from '../contexts/MockData';
+import LoginPrompt from './LoginPrompt';
 import './MaterialModal.css';
 import './MaterialModalLightbox.css';
 
@@ -11,6 +12,7 @@ export default function MaterialModal({ card, onClose }) {
   const [activeImage, setActiveImage] = useState(0);
   const [fullImage, setFullImage] = useState('');
   const [savingFavorite, setSavingFavorite] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   useEffect(() => setActiveImage(0), [card?.id]);
   if (!card) return null;
   const images = card.images?.length ? card.images : [card.image].filter(Boolean);
@@ -19,6 +21,7 @@ export default function MaterialModal({ card, onClose }) {
   const favorite = isCardFavorite(card);
   const handleFavorite = async (event) => {
     event.stopPropagation();
+    if (!isLoggedIn) { setShowLoginPrompt(true); return; }
     if (savingFavorite) return;
     setSavingFavorite(true); await toggleFavoriteCard(card); setSavingFavorite(false);
   };
@@ -36,7 +39,7 @@ export default function MaterialModal({ card, onClose }) {
           <button className="image-arrow next" onClick={(event) => { event.stopPropagation(); changeImage(1); }} aria-label="下一张"><ChevronRight size={20}/></button>
           <span className="image-count">{activeImage + 1} / {images.length}</span>
         </>}
-        {isLoggedIn&&<button className={`ticket-favorite ${favorite ? 'active' : ''}`} onClick={handleFavorite} disabled={savingFavorite} aria-label={favorite ? '取消收藏' : '收藏物料卡'}><Star size={19} fill={favorite ? 'currentColor' : 'none'}/></button>}
+        <button className={`ticket-favorite ${favorite ? 'active' : ''}`} onClick={handleFavorite} disabled={savingFavorite} aria-label={favorite ? '取消收藏' : '收藏物料卡'}><Star size={19} fill={favorite ? 'currentColor' : 'none'}/></button>
         <div className="ticket-hero-title"><small>MATERIAL COLLECTION</small><h2>{card.name}</h2></div>
       </div>
 
@@ -57,6 +60,7 @@ export default function MaterialModal({ card, onClose }) {
       </div>
     </article>
     {fullImage&&<div className="image-lightbox" onClick={event=>{event.stopPropagation();setFullImage('')}}><button aria-label="关闭大图"><X size={22}/></button><img src={fullImage} alt={`${card.name} 完整图片`} onClick={event=>event.stopPropagation()}/></div>}
+    {showLoginPrompt&&<LoginPrompt message="登录后即可收藏物料卡" onClose={()=>setShowLoginPrompt(false)}/>}
   </div>, document.body);
 }
 
