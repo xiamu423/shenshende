@@ -403,9 +403,14 @@ router.get('/chats', auth, async (req, res) => {
     JOIN users u2 ON c.user2_id = u2.id
     LEFT JOIN pinned_chats pc ON c.id = pc.chat_id AND pc.user_id = ?
     LEFT JOIN chat_user_settings cus ON c.id = cus.chat_id AND cus.user_id = ?
-    WHERE c.user1_id = ? OR c.user2_id = ?
+    WHERE (c.user1_id = ? OR c.user2_id = ?)
+      AND EXISTS (
+        SELECT 1 FROM messages visible
+        WHERE visible.chat_id = c.id
+          AND (visible.delivery_status != 'failed' OR visible.sender_id = ?)
+      )
     ORDER BY isPinned DESC, c.updated_at DESC
-  `, [req.user.id, req.user.id, req.user.id, req.user.id, req.user.id]);
+  `, [req.user.id, req.user.id, req.user.id, req.user.id, req.user.id, req.user.id]);
   
   const result = [];
   for (let c of chats) {

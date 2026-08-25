@@ -53,5 +53,10 @@ input:focus,textarea:focus,select:focus { border-color: rgba(41,74,141,.55) !imp
   .cards-grid { grid-template-columns:repeat(4,minmax(0,1fr)) !important; }
 }
 @media (max-width:767px) { body{background:var(--bg)} #root{box-shadow:none} }
+@supports (-webkit-touch-callout:none) {
+  @media (max-width:767px) {
+    input,textarea,select { font-size:16px !important; }
+  }
+}
 @media (max-width:380px) { .post-feed,.cards-grid{padding-left:10px !important;padding-right:10px !important}.postcard.card{padding:13px} }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after{scroll-behavior:auto !important;animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important} }

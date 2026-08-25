@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight, CalendarDays, Images, MapPin, Package, Pencil, Trash2 } from 'lucide-react';
 import TopHeader from '../components/TopHeader';
 import MaterialModal from '../components/MaterialModal';
+import ConfirmDialog from '../components/ConfirmDialog';
 import { useMockData } from '../contexts/MockData';
 import { formatCardTime } from '../constants/materialCard';
 import './MyCards.css';
 
 export default function MyCards(){
   const {myCards,deleteCard}=useMockData(); const nav=useNavigate(); const [selectedCard,setSelectedCard]=useState(null);
-  const remove=async(card)=>{if(window.confirm(`确定删除“${card.name}”吗？\n\n历史帖子中已经发布的物料卡快照会继续保留。`)){setSelectedCard(null);await deleteCard(card.id)}};
+  const [deleteTarget,setDeleteTarget]=useState(null); const [deleting,setDeleting]=useState(false); const [deleteError,setDeleteError]=useState('');
+  const remove=async()=>{if(!deleteTarget||deleting)return;setDeleting(true);setDeleteError('');const ok=await deleteCard(deleteTarget.id);setDeleting(false);if(!ok)return setDeleteError('删除失败，请稍后重试');setSelectedCard(null);setDeleteTarget(null)};
   const timeRange=(card)=>card.startTime&&card.endTime?`${formatCardTime(card.startTime)}  →  ${formatCardTime(card.endTime)}`:card.time||'时间待补充';
   return <div className="page-container my-cards-page animate-fade-in"><TopHeader title="我的物料卡" showBack showAdd onBack={()=>nav('/profile',{replace:true})} onAdd={()=>nav('/create-card')}/><div className="my-cards-intro"><div><strong>{myCards.length}</strong><span>张物料卡</span></div></div>
     <div className="my-cards-grid">{myCards.length===0?<div className="cards-empty"><Package size={34}/><h3>还没有物料卡</h3><p>创建后可在发布帖子时快速引用。</p><button onClick={()=>nav('/create-card')}>新建物料卡</button></div>:myCards.map(card=><article className="my-material-card" key={card.id}>
@@ -20,7 +22,8 @@ export default function MyCards(){
           <div className="card-fact"><span><MapPin size={15}/></span><div><small>交换地点</small><p>{card.location}</p></div></div>
         </div>
       </button>
-      <div className="card-actions"><button onClick={()=>nav(`/edit-card/${card.id}`)}><Pencil size={15}/>编辑物料卡</button><button className="danger" aria-label={`删除 ${card.name}`} onClick={()=>remove(card)}><Trash2 size={15}/></button></div>
+      <div className="card-actions"><button onClick={()=>nav(`/edit-card/${card.id}`)}><Pencil size={15}/>编辑物料卡</button><button className="danger" aria-label={`删除 ${card.name}`} onClick={()=>{setDeleteTarget(card);setDeleteError('')}}><Trash2 size={15}/></button></div>
     </article>)}</div><MaterialModal card={selectedCard} onClose={()=>setSelectedCard(null)}/>
+    {deleteTarget&&<ConfirmDialog title="删除物料卡？" message={`确定删除“${deleteTarget.name}”吗？`} description="历史帖子中已经发布的物料卡快照会继续保留。" loading={deleting} error={deleteError} onCancel={()=>setDeleteTarget(null)} onConfirm={remove}/>}
   </div>;
 }

@@ -7,6 +7,7 @@ import TopHeader from '../components/TopHeader';
 import MaterialModal from '../components/MaterialModal';
 import './PostDetail.css';
 import LoginPrompt from '../components/LoginPrompt';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function PostDetail() {
   const { id } = useParams();
@@ -16,6 +17,9 @@ export default function PostDetail() {
   const [selectedCard, setSelectedCard] = useState(null);
   const [changingStatus, setChangingStatus] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingPost, setDeletingPost] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
   useEffect(()=>{if(post)return;let active=true;getPostById(id).then(item=>{if(active){setPost(item);setLoading(false)}});return()=>{active=false}},[id,getPostById,post]);
 
   if (loading) return <div className="page-container post-not-found">正在加载…</div>;
@@ -25,12 +29,24 @@ export default function PostDetail() {
 
   const handleStatusChange = async () => {
     if (!isMine || changingStatus) return;
-    setChangingStatus(true); await togglePostStatus(post.id); setChangingStatus(false);
+    const previousStatus = post.status;
+    const nextStatus = finished ? '未换完' : '已换完';
+    setChangingStatus(true);
+    setPost((current) => ({ ...current, status: nextStatus }));
+    const result = await togglePostStatus(post.id);
+    if (!result.ok) {
+      setPost((current) => ({ ...current, status: previousStatus }));
+      alert('状态更新失败，请稍后重试');
+    } else if (result.status !== nextStatus) {
+      setPost((current) => ({ ...current, status: result.status }));
+    }
+    setChangingStatus(false);
   };
   const handleDelete = async () => {
-    if (!window.confirm('确定永久删除这条帖子吗？此操作无法撤销。')) return;
+    if (deletingPost) return;
+    setDeletingPost(true); setDeleteError('');
     if (await deletePost(post.id)) nav('/community', { replace: true });
-    else alert('删除失败，请稍后重试');
+    else { setDeletingPost(false); setDeleteError('删除失败，请稍后重试'); }
   };
   const handleDM = async () => {
     if (!isLoggedIn) { setShowLoginPrompt(true); return; }
@@ -72,9 +88,10 @@ export default function PostDetail() {
         </section>}
       </article>
 
-      {isMine && <aside className="owner-actions"><div><Package size={17}/><span>这是你发布的帖子</span></div><button className="owner-status-button" onClick={handleStatusChange} disabled={changingStatus}><RefreshCw size={14}/>{finished ? '恢复为交换中' : '标记为换完了'}</button><button className="delete-post-button" onClick={handleDelete}><Trash2 size={14}/>删除帖子</button></aside>}
+      {isMine && <aside className="owner-actions"><div><Package size={17}/><span>这是你发布的帖子</span></div><button className="owner-status-button" onClick={handleStatusChange} disabled={changingStatus}><RefreshCw size={14}/>{finished ? '恢复为交换中' : '标记为换完了'}</button><button className="delete-post-button" onClick={()=>{setShowDeleteConfirm(true);setDeleteError('')}}><Trash2 size={14}/>删除帖子</button></aside>}
     </main>
     <MaterialModal card={selectedCard} onClose={() => setSelectedCard(null)}/>
     {showLoginPrompt&&<LoginPrompt message="登录后即可发私信" onClose={()=>setShowLoginPrompt(false)}/>} 
+    {showDeleteConfirm&&<ConfirmDialog title="删除帖子？" message={`确定删除“${post.title}”吗？`} description="删除后无法撤销，其他人也将无法继续查看这条帖子。" loading={deletingPost} error={deleteError} onCancel={()=>setShowDeleteConfirm(false)} onConfirm={handleDelete}/>}
   </div>;
 }

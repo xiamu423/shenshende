@@ -6,3 +6,15 @@
 .community-back-to-top{position:fixed;right:max(18px,env(safe-area-inset-right));bottom:calc(78px + env(safe-area-inset-bottom));z-index:90;width:44px;height:44px;display:grid;place-items:center;border:1px solid rgba(41,74,141,.18);border-radius:50%;color:var(--primary);background:rgba(255,253,248,.94);box-shadow:0 9px 25px rgba(35,45,65,.17);backdrop-filter:blur(12px)}.community-back-to-top:hover{transform:translateY(-3px);color:#fff;background:var(--primary);box-shadow:0 12px 28px rgba(41,74,141,.25)}.community-back-to-top:active{transform:scale(.94)}@media(min-width:1080px){.community-back-to-top{right:max(calc((100vw - 1280px)/2 + 22px),22px);bottom:24px}}
 .community-back-to-top{right:calc(18px + env(safe-area-inset-right));bottom:calc(78px + env(safe-area-inset-bottom))}@media(min-width:1080px){.community-back-to-top{right:24px;bottom:24px}}
 .feed-load-more.loading:after{width:14px;height:14px;margin-left:8px;border:2px solid rgba(41,74,141,.18);border-top-color:var(--primary);background:transparent;box-shadow:none;animation:spin .7s linear infinite}
+
+/* Responsive time-range controls */
+.filter-popover-time .filter-time-range{grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr);align-items:end;gap:6px}
+.filter-popover-time .filter-time-range label{display:grid;min-width:0;gap:6px}
+.filter-popover-time .filter-time-range label>span{color:var(--text-secondary);font-size:9px;font-weight:700}
+.filter-popover-time .filter-time-range input{display:block;min-width:0;max-width:100%;height:44px}
+.filter-popover-time .filter-time-range i{height:44px;display:grid;place-items:center}
+@media(max-width:520px){
+  .filter-popover-time .filter-time-range{grid-template-columns:1fr;align-items:stretch;gap:9px}
+  .filter-popover-time .filter-time-range input{width:100%;height:52px;padding:0 12px;font-size:16px!important}
+  .filter-popover-time .filter-time-range i{height:17px}
+}

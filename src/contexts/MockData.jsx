@@ -150,8 +150,15 @@ export function MockProvider({ children }) {
   };
 
   const togglePostStatus = async (id) => {
-    const res = await fetch(`/api/posts/${id}/status`, { method: 'PATCH', headers: getAuthHeaders() });
-    if (res.ok) await fetchPosts({}, true);
+    try {
+      const res = await fetch(`/api/posts/${id}/status`, { method: 'PATCH', headers: getAuthHeaders() });
+      if (!res.ok) return { ok: false };
+      const data = await res.json();
+      setPosts((current) => current.map((post) => post.id === id ? { ...post, status: data.status } : post));
+      return { ok: true, status: data.status };
+    } catch {
+      return { ok: false };
+    }
   };
 
   const deletePost = async (id) => {

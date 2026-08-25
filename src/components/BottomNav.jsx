@@ -30,6 +30,7 @@ export default function BottomNav() {
         <NavLink 
           key={tab.path} 
           to={tab.path} 
+          replace
           className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
         >
           <span className="nav-icon-wrap"><tab.icon className="nav-icon" size={24} />{tab.path === '/chat' && unreadCount > 0 && <span className="nav-unread-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>}</span>
