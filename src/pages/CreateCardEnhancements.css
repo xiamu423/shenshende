@@ -18,10 +18,13 @@
 .datetime-picker-actions .confirm:disabled { opacity:.42; }
 @media(max-width:600px) {
   .datetime-picker-overlay { width:100vw; height:100dvh; align-items:center; padding:max(14px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom)); }
-  .datetime-picker-panel { width:min(390px,100%); max-height:calc(100dvh - 28px); overflow:auto; border-radius:22px; padding:20px 16px; animation:popIn .28s var(--ease-out); }
+  .datetime-picker-panel { width:calc(100vw - 28px); max-width:390px; max-height:calc(100dvh - 28px); overflow:auto; border-radius:22px; padding:20px 16px; animation:popIn .28s var(--ease-out); }
   .datetime-picker-heading { margin-bottom:17px; }
-  .datetime-picker-inputs { grid-template-columns:1fr; gap:13px; }
-  .datetime-picker-inputs input { min-width:0; max-width:100%; min-height:52px; padding:11px 13px; font-size:16px!important; }
+  .datetime-picker-inputs { width:100%; min-width:0; grid-template-columns:minmax(0,1fr); gap:13px; overflow:hidden; }
+  .datetime-picker-inputs label { width:100%; min-width:0; max-width:100%; overflow:hidden; }
+  .datetime-picker-inputs input { display:block; width:100%; min-width:0; max-width:100%; min-height:52px; padding:11px 13px; overflow:hidden; -webkit-appearance:none; appearance:none; font-size:16px!important; text-align:left; }
+  .datetime-picker-inputs input::-webkit-date-and-time-value { min-width:0; margin:0; text-align:left; }
+  .datetime-picker-inputs input::-webkit-datetime-edit { min-width:0; padding:0; }
   .datetime-picker-actions { margin-top:18px; }
   .datetime-picker-actions button { min-height:46px; }
 }
