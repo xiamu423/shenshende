@@ -282,6 +282,11 @@ export function MockProvider({ children }) {
     return [];
   }, []);
 
+  const getChatById = useCallback(async (chatId) => {
+    const res = await fetch(`/api/chats/${chatId}`, { headers: getAuthHeaders() });
+    return res.ok ? res.json() : null;
+  }, []);
+
   const markChatRead = useCallback(async (chatId) => {
     const res = await fetch(`/api/chats/${chatId}/read`, { method: 'PATCH', headers: getAuthHeaders() });
     if (res.ok) {
@@ -314,7 +319,7 @@ export function MockProvider({ children }) {
       posts, postsHasMore, postsLoading, postsTotal, fetchPosts, getPostById, getMyPosts, getMySummary, addPost, togglePostStatus, deletePost,
       myCards, addCard, updateCard, deleteCard,
       favoriteCards, isCardFavorite, toggleFavoriteCard, updateFavoriteRemark,
-      chats, togglePinChat, sendMessage, updateChatRemark, toggleBlockChat, findOrCreateChat, getChatMessages, markChatRead, refreshChats: fetchChats,
+      chats, togglePinChat, sendMessage, updateChatRemark, toggleBlockChat, findOrCreateChat, getChatById, getChatMessages, markChatRead, refreshChats: fetchChats,
       uploadFile, updateProfile
     }}>
       {children}

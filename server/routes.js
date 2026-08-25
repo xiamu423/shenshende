@@ -457,8 +457,46 @@ router.post('/chats', auth, async (req, res) => {
   res.json({ id: chat.id });
 });
 
+router.get('/chats/:id', auth, async (req, res) => {
+  const db = await getDb();
+  const chat = await db.get(`
+    SELECT c.*,
+      u1.id as u1_id, u1.name as u1_name, u1.avatar as u1_avatar,
+      u2.id as u2_id, u2.name as u2_name, u2.avatar as u2_avatar,
+      CASE WHEN pc.chat_id IS NOT NULL THEN 1 ELSE 0 END as isPinned,
+      COALESCE(cus.remark, '') as userRemark,
+      COALESCE(cus.is_blocked, 0) as isBlocked
+    FROM chats c
+    JOIN users u1 ON c.user1_id = u1.id
+    JOIN users u2 ON c.user2_id = u2.id
+    LEFT JOIN pinned_chats pc ON c.id = pc.chat_id AND pc.user_id = ?
+    LEFT JOIN chat_user_settings cus ON c.id = cus.chat_id AND cus.user_id = ?
+    WHERE c.id = ? AND (c.user1_id = ? OR c.user2_id = ?)
+  `, [req.user.id, req.user.id, req.params.id, req.user.id, req.user.id]);
+  if (!chat) return res.status(404).json({ error: '会话不存在' });
+
+  const isU1 = chat.u1_id === req.user.id;
+  const actualName = isU1 ? chat.u2_name : chat.u1_name;
+  res.json({
+    id: chat.id,
+    user: {
+      id: isU1 ? chat.u2_id : chat.u1_id,
+      name: chat.userRemark || actualName,
+      actualName,
+      avatar: isU1 ? chat.u2_avatar : chat.u1_avatar
+    },
+    isPinned: !!chat.isPinned,
+    unreadCount: 0,
+    isBlocked: !!chat.isBlocked,
+    lastMessage: null,
+    messages: []
+  });
+});
+
 router.get('/chats/:id/messages', auth, async (req, res) => {
   const db = await getDb();
+  const chat = await db.get('SELECT id FROM chats WHERE id = ? AND (user1_id = ? OR user2_id = ?)', [req.params.id, req.user.id, req.user.id]);
+  if (!chat) return res.status(404).json({ error: '会话不存在' });
   const messages = await db.all("SELECT *, sender_id as senderId, delivery_status as deliveryStatus FROM messages WHERE chat_id = ? AND (delivery_status != 'failed' OR sender_id = ?) ORDER BY created_at ASC", [req.params.id, req.user.id]);
   res.json(messages);
 });

@@ -9,17 +9,21 @@ import './ChatDetail.css';
 
 export default function ChatDetail() {
   const { id } = useParams(); const nav = useNavigate();
-  const { chats, sendMessage, togglePinChat, updateChatRemark, toggleBlockChat, currentUser, getChatMessages, markChatRead, uploadFile, myCards } = useMockData();
-  const chat = chats.find(item => item.id === id);
+  const { chats, sendMessage, togglePinChat, updateChatRemark, toggleBlockChat, currentUser, getChatById, getChatMessages, markChatRead, uploadFile, myCards } = useMockData();
+  const listedChat = chats.find(item => item.id === id);
+  const [directChat,setDirectChat]=useState(null); const [loadingChat,setLoadingChat]=useState(!listedChat);
+  const chat = listedChat || directChat;
   const [inputText,setInputText]=useState(''); const [messages,setMessages]=useState([]);
   const [menuOpen,setMenuOpen]=useState(false); const [remarkOpen,setRemarkOpen]=useState(false); const [remark,setRemark]=useState('');
   const [cardPickerOpen,setCardPickerOpen]=useState(false); const [selectedCard,setSelectedCard]=useState(null);
   const messagesEndRef=useRef(null); const fileInputRef=useRef(null);
 
+  useEffect(()=>{if(listedChat){setLoadingChat(false);return}let active=true;setLoadingChat(true);getChatById(id).then(item=>{if(active){setDirectChat(item);setLoadingChat(false)}});return()=>{active=false}},[id,listedChat,getChatById]);
   useEffect(()=>{if(!chat)return;markChatRead(chat.id);getChatMessages(chat.id).then(setMessages);const timer=setInterval(()=>getChatMessages(chat.id).then(setMessages),3000);return()=>clearInterval(timer)},[chat?.id,getChatMessages,markChatRead]);
   useEffect(()=>{
     messagesEndRef.current?.scrollIntoView({behavior:'smooth'});
   },[messages]);
+  if(loadingChat)return <div className="page-container chat-missing">正在打开会话…</div>;
   if(!chat)return <div className="page-container chat-missing">会话不存在</div>;
 
   const refresh=()=>getChatMessages(chat.id).then(setMessages);
