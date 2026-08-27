@@ -1,12 +1,12 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import process from 'node:process';
-import { randomBytes } from 'node:crypto';
 const serverDir = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = path.resolve(process.env.DATA_DIR || serverDir);
 if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) throw new Error('JWT_SECRET is required in production');
+const developmentJwtSecret = 'comino-world-local-development-secret';
 export const config = {
-  port: Number(process.env.PORT || 3000), jwtSecret: process.env.JWT_SECRET || randomBytes(32).toString('hex'),
+  port: Number(process.env.PORT || 3000), jwtSecret: process.env.JWT_SECRET || developmentJwtSecret,
   databasePath: path.resolve(process.env.DATABASE_PATH || path.join(dataDir, 'database.sqlite')),
   uploadsDir: path.resolve(process.env.UPLOADS_DIR || path.join(dataDir, 'uploads')),
   logDir: path.resolve(process.env.LOG_DIR || path.join(dataDir, 'logs')),

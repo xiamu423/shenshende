@@ -29,7 +29,13 @@ const removed=[]; const retained=[];
 for (const entry of await fs.readdir(config.uploadsDir,{withFileTypes:true})) {
   if (!entry.isFile()) continue;
   const filePath=path.join(config.uploadsDir,entry.name); const stat=await fs.stat(filePath);
-  if (!referenced.has(entry.name) && stat.mtimeMs < cutoff) { if(apply) await fs.unlink(filePath); removed.push(entry.name); }
+  if (!referenced.has(entry.name) && stat.mtimeMs < cutoff) {
+    if(apply) {
+      await fs.unlink(filePath);
+      await fs.unlink(path.join(config.uploadsDir,'thumbs',`${path.parse(entry.name).name}.webp`)).catch(()=>{});
+    }
+    removed.push(entry.name);
+  }
   else retained.push(entry.name);
 }
 console.log(JSON.stringify({mode:apply?'apply':'dry-run',graceHours:config.orphanGraceHours,referenced:referenced.size,removed:removed.length,retained:retained.length,files:removed},null,2));

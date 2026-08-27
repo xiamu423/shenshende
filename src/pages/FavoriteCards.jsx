@@ -4,6 +4,7 @@ import { CalendarDays, MapPin, Pencil, Star, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import TopHeader from '../components/TopHeader';
 import MaterialModal from '../components/MaterialModal';
+import LazyThumbnail from '../components/LazyThumbnail';
 import { useMockData } from '../contexts/MockData';
 import { formatCardTime } from '../constants/materialCard';
 import './FavoriteCards.css';
@@ -22,7 +23,7 @@ export default function FavoriteCards(){
       {favoriteCards.length===0?<div className="favorite-empty"><span><Star size={27}/></span><h2>还没有收藏</h2><p>在物料卡预览图片右下角点击星标，即可收藏。</p></div>:
       <div className="favorite-grid">{favoriteCards.map(card=><article className="favorite-card" key={card.sourceCardId||card.id}>
         <button className="favorite-card-main" onClick={()=>setSelectedCard(card)}>
-          <div className="favorite-cover"><img src={card.images?.[0]||card.image} alt={card.name}/><span><Star size={13} fill="currentColor"/></span><div><small>{card.eventTag||'其他'}</small><strong>{card.name}</strong></div></div>
+          <div className="favorite-cover"><LazyThumbnail src={card.images?.[0]||card.image} alt={card.name}/><span><Star size={13} fill="currentColor"/></span><div><small>{card.eventTag||'其他'}</small><strong>{card.name}</strong></div></div>
           <div className="favorite-facts"><p><CalendarDays size={13}/>{card.startTime?`${formatCardTime(card.startTime)} — ${formatCardTime(card.endTime)}`:card.time||'时间未填写'}</p><p><MapPin size={13}/>{card.location}</p></div>
           {card.favoriteRemark&&<div className="favorite-remark"><small>我的备注</small><p>{card.favoriteRemark}</p></div>}
         </button>

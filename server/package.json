@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "cleanup:uploads": "node cleanup-orphan-uploads.js"
+    "cleanup:uploads": "node cleanup-orphan-uploads.js",
+    "thumbnails:generate": "node generate-thumbnails.js"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +18,7 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
+    "sharp": "^0.35.3",
     "sqlite": "^5.1.1",
     "sqlite3": "^6.0.1"
   }

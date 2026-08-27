@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>COMINO WORLD · 产品故事</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --blue: #24539f;
+      --blue-deep: #173c7c;
+      --blue-soft: #e9effb;
+      --cream: #f7f3e9;
+      --paper: #fffdf8;
+      --ink: #142038;
+      --muted: #738098;
+      --yellow: #f4c557;
+      --brown: #6d4b2f;
+      --scene-ms: 4600ms;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      display: grid;
+      min-height: 100svh;
+      place-items: center;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 18% 16%, rgba(76, 115, 179, .2), transparent 30%),
+        radial-gradient(circle at 83% 86%, rgba(244, 197, 87, .16), transparent 32%),
+        #e9e7e2;
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Noto Sans SC", sans-serif;
+    }
+
+    button { font: inherit; }
+
+    .story-shell {
+      position: relative;
+      width: min(100vw, calc(100svh * 2 / 3));
+      aspect-ratio: 2 / 3;
+      max-height: 100svh;
+      overflow: hidden;
+      isolation: isolate;
+      container-type: inline-size;
+      background: var(--cream);
+      box-shadow: 0 30px 90px rgba(23, 39, 68, .24);
+    }
+
+    .scene {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(1.015);
+      transition: opacity .55s ease, transform .75s cubic-bezier(.2,.72,.2,1), visibility .55s;
+      pointer-events: none;
+    }
+
+    .scene.is-active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+      pointer-events: auto;
+    }
+
+    .brand-orbit,
+    .brand-orbit::before,
+    .brand-orbit::after {
+      position: absolute;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.18);
+      content: "";
+    }
+
+    .brand-orbit { width: 360px; height: 360px; right: -184px; top: -92px; }
+    .brand-orbit::before { width: 234px; height: 234px; left: 62px; top: 62px; }
+    .brand-orbit::after { width: 90px; height: 90px; left: 134px; top: 134px; background: rgba(255,255,255,.06); }
+
+    .intro, .outro {
+      align-content: start;
+      padding: 7.5cqw;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 92% 8%, rgba(244,197,87,.22), transparent 24%),
+        radial-gradient(circle at 8% 92%, rgba(58,103,177,.08), transparent 26%),
+        var(--cream);
+    }
+
+    .eyebrow {
+      position: relative;
+      z-index: 1;
+      width: max-content;
+      padding: 8px 13px;
+      border: 1px solid rgba(36,83,159,.3);
+      border-radius: 999px;
+      color: var(--blue-deep);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .22em;
+    }
+
+    .intro h1, .outro h2 {
+      position: relative;
+      z-index: 1;
+      margin: 3.8cqw 0 2cqw;
+      font-size: 9.7cqw;
+      line-height: 1.16;
+      letter-spacing: -.04em;
+    }
+
+    .intro .lead, .outro .lead {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      color: var(--muted);
+      font-size: 4.1cqw;
+      line-height: 1.8;
+    }
+
+    .intro .hint {
+      position: absolute;
+      z-index: 2;
+      bottom: 30px;
+      left: 34px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--blue);
+      font-size: 11px;
+      letter-spacing: .08em;
+    }
+
+    .hint i { width: 22px; height: 1px; background: currentColor; }
+
+    .sticker-board { position: absolute; z-index: 1; inset: 0; pointer-events: none; }
+    .sticker {
+      position: absolute;
+      overflow: hidden;
+      border: 7px solid #fff;
+      border-radius: 3.8cqw;
+      background: #fff;
+      box-shadow: 0 2.8cqw 6cqw rgba(59,49,36,.15);
+    }
+    .sticker img { width: 100%; height: 100%; display: block; object-fit: cover; }
+    .intro .sticker:nth-child(1) { width: 44%; height: 24%; right: 5%; top: 6%; transform: rotate(6deg); }
+    .intro .sticker:nth-child(2) { width: 31%; height: 19%; right: 4%; top: 38%; transform: rotate(-7deg); }
+    .intro .sticker:nth-child(3) { width: 48%; height: 25%; right: 4%; bottom: 6%; transform: rotate(4deg); }
+    .intro .cover-copy { position: relative; z-index: 3; width: 57%; margin-top: 24%; }
+    .outro .sticker:nth-child(1) { width: 39%; height: 22%; left: 3%; top: 5%; transform: rotate(-5deg); }
+    .outro .sticker:nth-child(2) { width: 36%; height: 20%; left: 4%; top: 36%; transform: rotate(7deg); }
+    .outro .sticker:nth-child(3) { width: 43%; height: 23%; left: 3%; bottom: 5%; transform: rotate(-3deg); }
+    .outro .cover-copy { position: relative; z-index: 3; width: 53%; margin: 25% 0 0 auto; text-align: left; }
+    .outro h2 { font-size: 5.5cqw; white-space: nowrap; }
+    .outro .lead { font-size: 2.7cqw; white-space: nowrap; }
+
+    .scene.is-active .rise {
+      animation: rise-in .75s both cubic-bezier(.2,.75,.2,1);
+    }
+    .scene.is-active .rise:nth-child(2) { animation-delay: .11s; }
+    .scene.is-active .rise:nth-child(3) { animation-delay: .2s; }
+
+    @keyframes rise-in {
+      from { opacity: 0; transform: translateY(22px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .product-scene { background: var(--cream); }
+
+    .shot {
+      position: absolute;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      filter: saturate(.94) contrast(.99);
+    }
+
+    .shot-wrap { position: absolute; overflow: hidden; background: #eee; }
+    .shot-wrap .shot { inset: 0; }
+
+    .shade {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(15,27,50,.07) 0%, transparent 25%, transparent 57%, rgba(12,26,52,.84) 100%);
+    }
+
+    .story-copy {
+      position: absolute;
+      z-index: 3;
+      left: 6.1cqw;
+      right: 6.1cqw;
+      bottom: 5.4cqw;
+      color: #fff;
+      text-shadow: 0 2px 18px rgba(6,16,33,.28);
+    }
+
+    .story-copy .kicker {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+    }
+
+    .story-copy .kicker::before { width: 20px; height: 2px; background: var(--yellow); content: ""; }
+    .story-copy h2 { margin: 0 0 8px; font-size: 6.9cqw; line-height: 1.16; letter-spacing: -.035em; }
+    .story-copy p { margin: 0; color: rgba(255,255,255,.83); font-size: 3.3cqw; line-height: 1.58; }
+
+    .feature-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 15px; }
+    .feature-chips span {
+      padding: 7px 10px;
+      border: 1px solid rgba(255,255,255,.24);
+      border-radius: 999px;
+      background: rgba(255,255,255,.12);
+      backdrop-filter: blur(10px);
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .community .shot,
+    .material-preview .shot {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      object-position: center top;
+    }
+    .community .shot {
+      left: 24%;
+      width: 52%;
+      height: 65%;
+      object-fit: contain;
+      object-position: center top;
+    }
+    .community .shade,
+    .material-preview .shade { display: none; }
+    .community .story-copy,
+    .material-preview .story-copy {
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 35%;
+      padding: 5.8cqw 6.1cqw 4cqw;
+      color: var(--ink);
+      text-shadow: none;
+      background: var(--cream);
+    }
+    .material-preview .story-copy {
+      top: 0;
+      bottom: auto;
+      height: 35%;
+    }
+    .community .story-copy .kicker,
+    .material-preview .story-copy .kicker { color: var(--blue); }
+    .community .story-copy p,
+    .material-preview .story-copy p { color: var(--muted); }
+    .community .feature-chips span {
+      color: var(--blue-deep);
+      border-color: #d5deef;
+      background: #eef3fb;
+      backdrop-filter: none;
+    }
+    .community.is-active .shot { animation: community-pan 3.4s both ease-in-out; }
+    @keyframes community-pan {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-18px); }
+    }
+
+    .material-preview { background: #d9dde4; }
+    .material-preview .shot-wrap { inset: auto 0 0; height: 65%; }
+    .material-preview .shot { top: -38%; }
+    .material-preview.is-active .shot { animation: preview-pan 3.2s both cubic-bezier(.3,.05,.2,1); }
+    @keyframes preview-pan {
+      0% { transform: translateY(0); }
+      18% { transform: translateY(0); }
+      100% { transform: translateY(-24px); }
+    }
+
+    .cards-scene { background: linear-gradient(180deg, var(--paper), var(--cream)); }
+    .cards-scene .screen-card {
+      position: absolute;
+      z-index: 1;
+      top: 3.4%;
+      left: 5.5%;
+      width: 89%;
+      height: 74%;
+      overflow: hidden;
+      border: 1px solid rgba(41,62,96,.1);
+      border-radius: 27px;
+      background: #fff;
+      box-shadow: 0 24px 55px rgba(38,50,70,.15);
+    }
+
+    .cards-scene .screen-card .shot { object-position: center top; }
+    .cards-scene .screen-card {
+      border: 0;
+      border-radius: 27px 27px 0 0;
+      box-shadow: none;
+      -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 82%, rgba(0,0,0,.82) 89%, transparent 100%);
+      mask-image: linear-gradient(to bottom, #000 0%, #000 82%, rgba(0,0,0,.82) 89%, transparent 100%);
+    }
+    .cards-scene.is-active .screen-card { animation: card-float 3.2s both cubic-bezier(.2,.65,.2,1); }
+    @keyframes card-float {
+      0% { opacity: 0; transform: translateY(34px) rotate(-1.4deg); }
+      16% { opacity: 1; transform: translateY(0) rotate(0); }
+      78% { transform: translateY(-8px) rotate(0); }
+      100% { transform: translateY(-8px) rotate(0); }
+    }
+
+    .light-copy {
+      position: absolute;
+      z-index: 2;
+      left: 6.9cqw;
+      right: 6.9cqw;
+      bottom: 4.7cqw;
+    }
+    .light-copy .index { color: var(--blue); font-size: 11px; font-weight: 800; letter-spacing: .18em; }
+    .light-copy h2 { margin: 7px 0 7px; font-size: 6.35cqw; line-height: 1.16; letter-spacing: -.03em; }
+    .light-copy p { margin: 0; color: var(--muted); font-size: 3.05cqw; line-height: 1.55; }
+    .light-copy .feature-chips span { color: var(--blue-deep); border-color: #d8e1f2; background: #f0f4fb; }
+
+    .favorites .screen-card { height: 70%; }
+    .favorites .screen-card .shot { object-position: center top; }
+    .favorites .star-pop {
+      position: absolute;
+      z-index: 3;
+      top: 5.5%;
+      right: 8%;
+      display: grid;
+      width: 52px;
+      height: 52px;
+      place-items: center;
+      border-radius: 50%;
+      background: #fff;
+      color: #f4bc37;
+      font-size: 26px;
+      box-shadow: 0 13px 30px rgba(49,57,76,.18);
+    }
+    .favorites.is-active .star-pop { animation: star 1s .7s both cubic-bezier(.2,1.4,.3,1); }
+    @keyframes star { from { opacity: 0; transform: scale(.4) rotate(-24deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
+
+    .chat-scene {
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 88% 10%, rgba(43,86,161,.1), transparent 26%),
+        linear-gradient(180deg, #fbf9f3, #f3eee3);
+    }
+    .chat-list-shot {
+      display: none;
+    }
+    .chat-detail-card {
+      position: absolute;
+      z-index: 2;
+      top: 2.3%;
+      left: 50%;
+      width: 72%;
+      height: 80%;
+      overflow: hidden;
+      border: 1px solid rgba(34,54,88,.1);
+      border-radius: 24px;
+      background: #fff;
+      box-shadow: 0 26px 65px rgba(38,48,69,.22);
+      transform: translate(-50%, 35px);
+    }
+    .chat-detail-card .shot {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      object-position: center top;
+    }
+    .chat-scene.is-active .chat-detail-card { animation: chat-slide 1s .25s both cubic-bezier(.2,.82,.2,1); }
+    @keyframes chat-slide {
+      from { opacity: 0; transform: translate(-50%, 35px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+    .chat-caption {
+      position: absolute;
+      z-index: 4;
+      left: 4.6cqw;
+      bottom: 3.2cqw;
+      padding: 2.55cqw 3.3cqw;
+      border: 1px solid rgba(36,83,159,.14);
+      border-radius: 15px;
+      background: rgba(255,253,248,.96);
+      color: var(--ink);
+      box-shadow: 0 12px 28px rgba(34,53,83,.12);
+    }
+    .chat-caption h2 { margin: 0 0 3px; color: var(--blue-deep); font-size: 3.8cqw; line-height: 1.2; }
+    .chat-caption p { margin: 0; color: var(--muted); font-size: 2.3cqw; line-height: 1.45; }
+
+    .outro .eyebrow { margin-left: 0; }
+    .outro .lead { margin-left: 0; }
+    .outro .value-row {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: flex-start;
+      gap: 17px;
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .08em;
+    }
+    .outro .value-row i { width: 3px; height: 3px; align-self: center; border-radius: 50%; background: var(--yellow); }
+    .outro .url { position: absolute; z-index: 3; right: 7.5cqw; top: 7.5cqw; color: var(--blue); font-size: 11px; letter-spacing: .18em; }
+
+    .story-progress {
+      position: absolute;
+      z-index: 20;
+      top: max(13px, env(safe-area-inset-top));
+      left: 15px;
+      right: 15px;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+    .story-progress span { position: relative; height: 2px; overflow: hidden; border-radius: 99px; background: rgba(255,255,255,.28); }
+    .story-progress span::after { position: absolute; inset: 0; background: #fff; content: ""; transform: scaleX(0); transform-origin: left; }
+    .story-progress span.is-done::after { transform: scaleX(1); }
+    .story-progress span.is-current::after { animation: progress var(--scene-ms) linear forwards; }
+    .story-shell.is-paused .story-progress span.is-current::after { animation-play-state: paused; }
+    @keyframes progress { to { transform: scaleX(1); } }
+
+    .tap-zone { position: absolute; z-index: 18; top: 30px; bottom: 70px; width: 24%; border: 0; background: transparent; cursor: pointer; opacity: 0; }
+    .tap-zone.prev { left: 0; }
+    .tap-zone.next { right: 0; }
+
+    .story-controls {
+      position: absolute;
+      z-index: 21;
+      right: 14px;
+      bottom: 14px;
+      display: flex;
+      gap: 8px;
+      opacity: 0;
+      transition: opacity .2s;
+    }
+    .story-shell:hover .story-controls,
+    .story-controls:focus-within { opacity: 1; }
+    .story-controls button {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.54);
+      border-radius: 50%;
+      background: rgba(15,27,50,.48);
+      color: #fff;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+    }
+    .story-controls button:hover { background: rgba(15,27,50,.72); }
+
+    @media (max-width: 500px) {
+      .story-shell { width: 100vw; max-height: 100svh; box-shadow: none; }
+      .story-controls { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="story-shell" id="cominoStory" aria-label="COMINO WORLD 产品故事">
+    <div class="story-progress" aria-hidden="true"></div>
+
+    <section class="scene intro is-active" data-duration="2800">
+      <div class="sticker-board" aria-hidden="true">
+        <div class="sticker"><img src="source/sticker-cover-1.jpg" alt=""></div>
+        <div class="sticker"><img src="source/sticker-cover-2.jpg" alt=""></div>
+        <div class="sticker"><img src="source/sticker-cover-3.jpg" alt=""></div>
+      </div>
+      <div class="cover-copy">
+        <div class="eyebrow rise">COMINO WORLD</div>
+        <h1 class="rise">万事米丽，<br>坏事嫑来</h1>
+        <p class="lead rise">为演出物料交换而生。<br>让喜欢的物料，遇见喜欢它的人。</p>
+      </div>
+      <div class="hint"><i></i> PRODUCT STORY</div>
+    </section>
+
+    <section class="scene product-scene community" data-duration="3400">
+      <img class="shot" src="source/gtm-community.jpg" alt="COMINO WORLD 社区广场">
+      <div class="shade"></div>
+      <div class="story-copy">
+        <div class="kicker rise">DISCOVER</div>
+        <h2 class="rise">想交换的物料，<br>不必再靠碰运气。</h2>
+        <p class="rise">从新鲜分享里发现心仪物料，<br>按时间、活动与方式快速找到合适的人。</p>
+        <div class="feature-chips rise"><span>交换状态</span><span>交换时间</span><span>活动标签</span><span>互换方式</span></div>
+      </div>
+    </section>
+
+    <section class="scene product-scene material-preview" data-duration="3200">
+      <div class="shot-wrap"><img class="shot" src="source/gtm-material-preview.jpg" alt="物料卡完整预览"></div>
+      <div class="shade"></div>
+      <div class="story-copy">
+        <div class="kicker rise">MATERIAL CARD</div>
+        <h2 class="rise">一张卡，讲清楚<br>一份物料。</h2>
+        <p class="rise">图片、时间、地点、份数与物料主，<br>关键信息一目了然。</p>
+      </div>
+    </section>
+
+    <section class="scene cards-scene" data-duration="3200">
+      <div class="screen-card"><img class="shot" src="source/gtm-my-cards.jpg" alt="我的物料卡"></div>
+      <div class="light-copy">
+        <div class="index rise">02 · ORGANIZE</div>
+        <h2 class="rise">每一份物料，<br>都值得被认真整理。</h2>
+        <p class="rise">集中管理、随时编辑；发布过的帖子，仍保留当时的物料信息。</p>
+        <div class="feature-chips rise"><span>多图展示</span><span>无限编辑</span><span>历史快照</span></div>
+      </div>
+    </section>
+
+    <section class="scene cards-scene favorites" data-duration="3000">
+      <div class="screen-card"><img class="shot" src="source/gtm-favorites.jpg" alt="收藏的物料卡"></div>
+      <div class="star-pop" aria-hidden="true">★</div>
+      <div class="light-copy">
+        <div class="index rise">03 · COLLECT</div>
+        <h2 class="rise">还没决定交换？<br>先把喜欢的留下。</h2>
+        <p class="rise">收藏自己或他人的物料卡，再写一条只有自己看到的备注。</p>
+      </div>
+    </section>
+
+    <section class="scene chat-scene" data-duration="3800">
+      <img class="chat-list-shot" src="source/gtm-chat-list.jpg" alt="聊天列表">
+      <div class="chat-detail-card"><img class="shot" src="source/gtm-chat-detail.jpg" alt="聊天详情与物料卡消息"></div>
+      <div class="chat-caption">
+        <h2 class="rise">从“我喜欢”，<br>到“我们聊聊”。</h2>
+        <p class="rise">未读及时提醒，物料卡直接发送。<br>让每段沟通，都更清楚。</p>
+      </div>
+    </section>
+
+    <section class="scene outro" data-duration="3400">
+      <div class="sticker-board" aria-hidden="true">
+        <div class="sticker"><img src="source/sticker-end-1.jpg" alt=""></div>
+        <div class="sticker"><img src="source/sticker-end-2.jpg" alt=""></div>
+        <div class="sticker"><img src="source/sticker-end-3.jpg" alt=""></div>
+      </div>
+      <div class="cover-copy">
+        <div class="eyebrow rise">COMINO WORLD</div>
+        <h2 class="rise">让喜欢的物料，<br>遇见喜欢它的人。</h2>
+        <p class="lead rise">从发现，到交换。<br>珍惜每一份从现场带回来的心意。</p>
+        <div class="value-row rise"><span>发现</span><i></i><span>整理</span><i></i><span>收藏</span><i></i><span>连接</span></div>
+      </div>
+      <div class="url">COMINO.TOP</div>
+    </section>
+
+    <button class="tap-zone prev" type="button" aria-label="上一幕"></button>
+    <button class="tap-zone next" type="button" aria-label="下一幕"></button>
+    <div class="story-controls">
+      <button class="toggle" type="button" aria-label="暂停">Ⅱ</button>
+      <button class="replay" type="button" aria-label="重新播放">↻</button>
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      const root = document.getElementById('cominoStory');
+      const scenes = [...root.querySelectorAll('.scene')];
+      const progress = root.querySelector('.story-progress');
+      const toggle = root.querySelector('.toggle');
+      let current = 0;
+      let timer = null;
+      let paused = false;
+      let remaining = 0;
+      let startedAt = 0;
+
+      scenes.forEach(() => progress.appendChild(document.createElement('span')));
+      const bars = [...progress.children];
+
+      function duration() {
+        return Number(scenes[current].dataset.duration || 4600);
+      }
+
+      function paintProgress() {
+        root.style.setProperty('--scene-ms', `${duration()}ms`);
+        bars.forEach((bar, index) => {
+          bar.className = index < current ? 'is-done' : index === current ? 'is-current' : '';
+        });
+      }
+
+      function arm(ms = duration()) {
+        clearTimeout(timer);
+        remaining = ms;
+        startedAt = performance.now();
+        if (!paused) timer = setTimeout(() => go(current + 1), ms);
+      }
+
+      function go(index) {
+        current = (index + scenes.length) % scenes.length;
+        scenes.forEach((scene, i) => scene.classList.toggle('is-active', i === current));
+        paintProgress();
+        arm();
+      }
+
+      function setPaused(value) {
+        paused = value;
+        root.classList.toggle('is-paused', paused);
+        toggle.textContent = paused ? '▶' : 'Ⅱ';
+        toggle.setAttribute('aria-label', paused ? '继续播放' : '暂停');
+        if (paused) {
+          remaining = Math.max(160, remaining - (performance.now() - startedAt));
+          clearTimeout(timer);
+        } else {
+          arm(remaining || duration());
+        }
+      }
+
+      root.querySelector('.prev').addEventListener('click', () => go(current - 1));
+      root.querySelector('.next').addEventListener('click', () => go(current + 1));
+      toggle.addEventListener('click', () => setPaused(!paused));
+      root.querySelector('.replay').addEventListener('click', () => { paused = false; root.classList.remove('is-paused'); go(0); });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowRight') go(current + 1);
+        if (event.key === 'ArrowLeft') go(current - 1);
+        if (event.key === ' ') { event.preventDefault(); setPaused(!paused); }
+      });
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden && !paused) setPaused(true);
+      });
+
+      paintProgress();
+      arm();
+    })();
+  </script>
+</body>
+</html>

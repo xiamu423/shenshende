@@ -9,14 +9,23 @@ import { MATERIAL_EVENT_TAGS } from '../constants/materialCard';
 import LoginPrompt from '../components/LoginPrompt';
 import './Community.css';
 
+let communityViewState = {
+  exchangeStatus: '全部',
+  startTime: '',
+  endTime: '',
+  selectedTags: [],
+  exchangeMethod: '全部',
+  scrollY: 0
+};
+
 export default function Community() {
-  const { posts, postsHasMore, postsLoading, postsTotal, fetchPosts, isLoggedIn } = useMockData();
+  const { posts, postsHasMore, postsLoading, fetchPosts, isLoggedIn } = useMockData();
   const nav = useNavigate();
-  const [exchangeStatus, setExchangeStatus] = useState('全部');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
-  const [selectedTags, setSelectedTags] = useState([]);
-  const [exchangeMethod, setExchangeMethod] = useState('全部');
+  const [exchangeStatus, setExchangeStatus] = useState(communityViewState.exchangeStatus);
+  const [startTime, setStartTime] = useState(communityViewState.startTime);
+  const [endTime, setEndTime] = useState(communityViewState.endTime);
+  const [selectedTags, setSelectedTags] = useState(() => [...communityViewState.selectedTags]);
+  const [exchangeMethod, setExchangeMethod] = useState(communityViewState.exchangeMethod);
   const [activeFilter, setActiveFilter] = useState(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const loadMoreRef = useRef(null);
@@ -28,7 +37,24 @@ export default function Community() {
   const resetFilters = () => { setExchangeStatus('全部'); setStartTime(''); setEndTime(''); setSelectedTags([]); setExchangeMethod('全部'); };
   const closeFilter = () => { if (activeFilter !== 'time' || !timeError) setActiveFilter(null); };
 
-  useEffect(() => { if (!timeError) fetchPosts(filters, true); }, [filters, timeError, fetchPosts]);
+  useEffect(() => {
+    communityViewState = { ...communityViewState, exchangeStatus, startTime, endTime, selectedTags: [...selectedTags], exchangeMethod };
+    if (!timeError) fetchPosts(filters, true, true);
+  }, [exchangeStatus, startTime, endTime, selectedTags, exchangeMethod, filters, timeError, fetchPosts]);
+
+  useEffect(() => {
+    const restoreY = communityViewState.scrollY;
+    const restoreFrame = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => window.scrollTo({ top: restoreY, behavior: 'auto' }));
+    });
+    const rememberPosition = () => { communityViewState.scrollY = window.scrollY; };
+    window.addEventListener('scroll', rememberPosition, { passive: true });
+    return () => {
+      window.cancelAnimationFrame(restoreFrame);
+      rememberPosition();
+      window.removeEventListener('scroll', rememberPosition);
+    };
+  }, []);
 
   useEffect(() => {
     const target = loadMoreRef.current;
@@ -55,7 +81,7 @@ export default function Community() {
           <button className={selectedTags.length?'active':''} onClick={()=>setActiveFilter('tags')}><Tags size={14}/><span>活动标签</span>{selectedTags.length>0&&<small>{selectedTags.length}</small>}</button>
           <button className={exchangeMethod!=='全部'?'active':''} onClick={()=>setActiveFilter('method')}><Repeat2 size={14}/><span>互换方式</span>{exchangeMethod!=='全部'&&<small>{exchangeMethod}</small>}</button>
         </div>
-        <div className="filter-toolbar-meta"><span>{postsTotal}<small>条结果</small></span><button className="filter-reset" onClick={resetFilters} aria-label="重置筛选"><RotateCcw size={14}/></button></div>
+        <div className="filter-toolbar-meta"><button className="filter-reset" onClick={resetFilters} aria-label="重置筛选"><RotateCcw size={14}/></button></div>
       </section>
       {activeFilter&&createPortal(<div className="filter-popover-overlay" onClick={closeFilter}>
         <section className="filter-popover" onClick={event=>event.stopPropagation()}>

@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { CalendarDays, MapPin, MessageSquare, Package, RefreshCw, Trash2 } from 'lucide-react';
+import { CalendarDays, MapPin, MessageSquare, Package, Pencil, RefreshCw, Trash2 } from 'lucide-react';
 import { useMockData } from '../contexts/MockData';
 import { formatCardTime } from '../constants/materialCard';
 import TopHeader from '../components/TopHeader';
 import MaterialModal from '../components/MaterialModal';
 import './PostDetail.css';
+import './PostEditing.css';
 import LoginPrompt from '../components/LoginPrompt';
 import ConfirmDialog from '../components/ConfirmDialog';
+import LazyThumbnail from '../components/LazyThumbnail';
 
 export default function PostDetail() {
   const { id } = useParams();
@@ -78,7 +80,7 @@ export default function PostDetail() {
           <div className="detail-section-title"><div><small>MATERIAL SNAPSHOT</small><h2>关联物料卡</h2></div><span>{post.materialCards.length} 张</span></div>
           <div className={`detail-material-grid count-${post.materialCards.length}`}>
             {post.materialCards.map(card => <button className="detail-material-card" key={card.sourceCardId || card.id} onClick={() => setSelectedCard(card)}>
-              <div className="detail-material-cover"><img src={card.images?.[0] || card.image} alt={card.name}/><div className="detail-cover-tags"><span>{card.eventTag || '其他'}</span><b>{card.exchangeMethod || '互换'}</b></div></div>
+              <div className="detail-material-cover"><LazyThumbnail src={card.images?.[0] || card.image} alt={card.name}/><div className="detail-cover-tags"><span>{card.eventTag || '其他'}</span><b>{card.exchangeMethod || '互换'}</b></div></div>
               <div className="detail-material-copy"><div className="detail-material-name"><strong>{card.name}</strong><span>{card.quantity || 1}<small>份</small></span></div>
                 <p><CalendarDays size={13}/>{card.startTime ? `${formatCardTime(card.startTime)} — ${formatCardTime(card.endTime)}` : card.time || '时间未填写'}</p>
                 <p><MapPin size={13}/>{card.location}</p>
@@ -88,7 +90,7 @@ export default function PostDetail() {
         </section>}
       </article>
 
-      {isMine && <aside className="owner-actions"><div><Package size={17}/><span>这是你发布的帖子</span></div><button className="owner-status-button" onClick={handleStatusChange} disabled={changingStatus}><RefreshCw size={14}/>{finished ? '恢复为交换中' : '标记为换完了'}</button><button className="delete-post-button" onClick={()=>{setShowDeleteConfirm(true);setDeleteError('')}}><Trash2 size={14}/>删除帖子</button></aside>}
+      {isMine && <aside className="owner-actions"><div><Package size={17}/><span>这是你发布的帖子</span></div><button className="edit-post-button" onClick={()=>nav(`/edit-post/${post.id}`)}><Pencil size={14}/>编辑帖子</button><button className="owner-status-button" onClick={handleStatusChange} disabled={changingStatus}><RefreshCw size={14}/>{finished ? '恢复为交换中' : '标记为换完了'}</button><button className="delete-post-button" onClick={()=>{setShowDeleteConfirm(true);setDeleteError('')}}><Trash2 size={14}/>删除帖子</button></aside>}
     </main>
     <MaterialModal card={selectedCard} onClose={() => setSelectedCard(null)}/>
     {showLoginPrompt&&<LoginPrompt message="登录后即可发私信" onClose={()=>setShowLoginPrompt(false)}/>} 

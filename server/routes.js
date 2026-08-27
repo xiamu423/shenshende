@@ -6,6 +6,8 @@ import { generateDefaultNickname } from './defaultNickname.js';
 import { generateDefaultAvatar } from './defaultAvatar.js';
 import { config } from './config.js';
 import path from 'path';
+import fs from 'node:fs/promises';
+import sharp from 'sharp';
 import { promisify } from 'node:util';
 import { randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
 
@@ -167,10 +169,21 @@ router.post('/auth/login', async (req, res) => {
   res.json({ user, token });
 });
 
-router.post('/upload', auth, upload.single('file'), (req, res) => {
+router.post('/upload', auth, upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
   const url = `/uploads/${req.file.filename}`;
-  res.json({ url });
+  const thumbnailDir = path.join(uploadsDir, 'thumbs');
+  const thumbnailName = `${path.parse(req.file.filename).name}.webp`;
+  try {
+    await fs.mkdir(thumbnailDir, { recursive: true });
+    await sharp(req.file.path, { animated: false }).rotate()
+      .resize({ width: 480, height: 480, fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 70, effort: 4 })
+      .toFile(path.join(thumbnailDir, thumbnailName));
+  } catch (error) {
+    console.warn(`Thumbnail generation failed for ${req.file.filename}:`, error.message);
+  }
+  res.json({ url, thumbnailUrl: `/uploads/thumbs/${thumbnailName}` });
 });
 
 // 3. Posts APIs
@@ -250,6 +263,55 @@ router.post('/posts', auth, async (req, res) => {
     }
   }
   res.json({ success: true, id });
+});
+
+router.put('/posts/:id', auth, async (req, res) => {
+  const { id } = req.params;
+  const { title, content = '', status, materialCardIds = [] } = req.body;
+  const cleanTitle = String(title || '').trim();
+  if (!cleanTitle) return res.status(400).json({ error: '请输入标题' });
+  if (cleanTitle.length > 15) return res.status(400).json({ error: '标题最多15字' });
+  if (String(content).length > 1000) return res.status(400).json({ error: '正文最多1000字' });
+  if (!['未换完', '已换完'].includes(status)) return res.status(400).json({ error: '帖子状态无效' });
+  const selectedIds = [...new Set(Array.isArray(materialCardIds) ? materialCardIds.filter(Boolean) : [])];
+  if (selectedIds.length > 3) return res.status(400).json({ error: '最多关联3张物料卡' });
+
+  const db = await getDb();
+  const post = await db.get('SELECT * FROM posts WHERE id = ?', [id]);
+  if (!post) return res.status(404).json({ error: '帖子不存在' });
+  if (post.user_id !== req.user.id) return res.status(403).json({ error: '无权编辑此帖子' });
+
+  const existingRows = await db.all('SELECT source_card_id, snapshot_json FROM post_card_snapshots WHERE post_id = ? ORDER BY created_at, id', [id]);
+  const existingSnapshots = new Map(existingRows.map((row) => [row.source_card_id, row.snapshot_json]));
+  const nextSnapshots = [];
+  for (const cardId of selectedIds) {
+    if (existingSnapshots.has(cardId)) {
+      const cardStillExists = await db.get('SELECT id FROM material_cards WHERE id = ? AND user_id = ?', [cardId, req.user.id]);
+      nextSnapshots.push({ cardId, snapshotJson: existingSnapshots.get(cardId), linkable: Boolean(cardStillExists) });
+      continue;
+    }
+    const card = await db.get('SELECT * FROM material_cards WHERE id = ? AND user_id = ?', [cardId, req.user.id]);
+    if (!card) return res.status(400).json({ error: '所选物料卡不存在或无权使用' });
+    const normalized = await normalizeCard(db, card);
+    nextSnapshots.push({ cardId, snapshotJson: JSON.stringify({ ...normalized, sourceCardId: card.id }), linkable: true });
+  }
+
+  await db.exec('BEGIN');
+  try {
+    await db.run('UPDATE posts SET title = ?, content = ?, status = ? WHERE id = ?', [cleanTitle, String(content), status, id]);
+    await db.run('DELETE FROM post_card_relations WHERE post_id = ?', [id]);
+    await db.run('DELETE FROM post_card_snapshots WHERE post_id = ?', [id]);
+    for (const item of nextSnapshots) {
+      if (item.linkable) await db.run('INSERT OR IGNORE INTO post_card_relations (post_id, card_id) VALUES (?, ?)', [id, item.cardId]);
+      await db.run('INSERT INTO post_card_snapshots (id, post_id, source_card_id, snapshot_json) VALUES (?, ?, ?, ?)', [`pcs_${Date.now()}_${Math.random()}`, id, item.cardId, item.snapshotJson]);
+    }
+    await db.exec('COMMIT');
+  } catch (error) {
+    await db.exec('ROLLBACK');
+    throw error;
+  }
+  const updated = await db.get('SELECT p.*, u.name AS author_name, u.avatar AS author_avatar FROM posts p JOIN users u ON p.user_id = u.id WHERE p.id = ?', [id]);
+  res.json({ success: true, post: await normalizePost(db, updated) });
 });
 
 router.patch('/posts/:id/status', auth, async (req, res) => {

@@ -6,6 +6,7 @@ import './PostCardMaterials.css';
 import './PostCardMaterialTags.css';
 import StatusStamp from './StatusStamp';
 import MaterialModal from './MaterialModal';
+import LazyThumbnail from './LazyThumbnail';
 
 export default function PostCard({ post }) {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ export default function PostCard({ post }) {
         <div className={`postcard-materials materials-${Math.min(post.materialCards.length, 3)}`}>
           {post.materialCards.slice(0, 3).map((card) => (
             <button type="button" className="postcard-material" key={card.sourceCardId || card.id} onClick={(event) => { event.stopPropagation(); setSelectedCard(card); }}>
-              <img src={card.images?.[0] || card.image} alt={card.name}/><div className="material-shade"/>
+              <LazyThumbnail src={card.images?.[0] || card.image} alt={card.name}/><div className="material-shade"/>
               <div className="material-top-tags"><span>{card.eventTag || '其他'}</span><b>{card.exchangeMethod || '互换'}</b></div>
               <span className="material-method">{card.exchangeMethod || '互换'}</span>
               <div className="material-copy"><small>{card.eventTag || '其他'}</small><strong>{card.name}</strong><em>{card.quantity || 1} 份</em></div>

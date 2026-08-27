@@ -65,8 +65,9 @@ export function MockProvider({ children }) {
     setIsLoggedIn(false);
   };
 
-  const fetchPosts = useCallback(async (filters = {}, reset = false) => {
+  const fetchPosts = useCallback(async (filters = {}, reset = false, preserveCurrent = false) => {
     const queryKey = JSON.stringify(filters);
+    if (preserveCurrent && reset && queryKey === postsQueryRef.current && postsPageRef.current > 0) return;
     const shouldReset = reset || queryKey !== postsQueryRef.current;
     if (postsLoadingRef.current && !shouldReset) return;
     const requestId = ++postsRequestRef.current;
@@ -147,6 +148,18 @@ export function MockProvider({ children }) {
       body: JSON.stringify(postData)
     });
     if (res.ok) await fetchPosts({}, true);
+  };
+
+  const updatePost = async (id, postData) => {
+    const res = await fetch(`/api/posts/${encodeURIComponent(id)}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify(postData)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 401) return { ok: false, error: '登录已失效，请重新登录' };
+    if (!res.ok) return { ok: false, error: data.error || '保存失败，请稍后重试' };
+    setPosts((current) => current.map((post) => post.id === id ? data.post : post));
+    return { ok: true, post: data.post };
   };
 
   const togglePostStatus = async (id) => {
@@ -316,7 +329,7 @@ export function MockProvider({ children }) {
   return (
     <MockContext.Provider value={{
       currentUser, isLoggedIn, loginAuth, registerAuth, logout,
-      posts, postsHasMore, postsLoading, postsTotal, fetchPosts, getPostById, getMyPosts, getMySummary, addPost, togglePostStatus, deletePost,
+      posts, postsHasMore, postsLoading, postsTotal, fetchPosts, getPostById, getMyPosts, getMySummary, addPost, updatePost, togglePostStatus, deletePost,
       myCards, addCard, updateCard, deleteCard,
       favoriteCards, isCardFavorite, toggleFavoriteCard, updateFavoriteRemark,
       chats, togglePinChat, sendMessage, updateChatRemark, toggleBlockChat, findOrCreateChat, getChatById, getChatMessages, markChatRead, refreshChats: fetchChats,

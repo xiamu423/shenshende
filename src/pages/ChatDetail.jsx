@@ -5,6 +5,7 @@ import { Ban, CalendarDays, ChevronLeft, CreditCard, Image as ImageIcon, MapPin,
 import { useMockData } from '../contexts/MockData';
 import { formatCardTime } from '../constants/materialCard';
 import MaterialModal from '../components/MaterialModal';
+import LazyThumbnail from '../components/LazyThumbnail';
 import './ChatDetail.css';
 
 export default function ChatDetail() {
@@ -45,7 +46,7 @@ export default function ChatDetail() {
       <div ref={messagesEndRef}/>
     </main>
 
-    {cardPickerOpen&&createPortal(<div className="chat-picker-overlay" onClick={()=>setCardPickerOpen(false)}><div className="chat-card-picker-panel" onClick={event=>event.stopPropagation()}><div className="chat-picker-heading"><div><small>MATERIAL CARDS</small><h2>选择要发送的物料卡</h2></div><button onClick={()=>setCardPickerOpen(false)}><X size={19}/></button></div><div className="chat-material-list">{myCards.map(card=><button className="chat-material-option" key={card.id} onClick={()=>handleCard(card)}><div><img src={card.images?.[0]||card.image} alt={card.name}/><span>{card.eventTag||'其他'}</span></div><strong>{card.name}</strong></button>)}{myCards.length===0&&<p className="no-chat-cards">暂无物料卡</p>}</div></div></div>,document.body)}
+    {cardPickerOpen&&createPortal(<div className="chat-picker-overlay" onClick={()=>setCardPickerOpen(false)}><div className="chat-card-picker-panel" onClick={event=>event.stopPropagation()}><div className="chat-picker-heading"><div><small>MATERIAL CARDS</small><h2>选择要发送的物料卡</h2></div><button onClick={()=>setCardPickerOpen(false)}><X size={19}/></button></div><div className="chat-material-list">{myCards.map(card=><button className="chat-material-option" key={card.id} onClick={()=>handleCard(card)}><div><LazyThumbnail src={card.images?.[0]||card.image} alt={card.name}/><span>{card.eventTag||'其他'}</span></div><strong>{card.name}</strong></button>)}{myCards.length===0&&<p className="no-chat-cards">暂无物料卡</p>}</div></div></div>,document.body)}
 
     <footer className="chat-composer"><input type="file" ref={fileInputRef} hidden accept="image/*" onChange={handleImage}/><button className="composer-tool" onClick={()=>fileInputRef.current?.click()}><ImageIcon size={21}/></button><button className={`composer-tool ${cardPickerOpen?'active':''}`} onClick={()=>setCardPickerOpen(true)}><CreditCard size={21}/></button><textarea value={inputText} onChange={event=>setInputText(event.target.value)} onKeyDown={event=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();handleSend()}}} placeholder="发送消息" rows={1}/><button className="send-button" onClick={handleSend} disabled={!inputText.trim()}><Send size={17}/></button></footer>
 
@@ -61,4 +62,4 @@ function MessageRow({message,isMe,myAvatar,otherAvatar,onCard}){
   return <div className={`message-row ${isMe?'mine':'theirs'}`}><img className="message-avatar" src={isMe?myAvatar:otherAvatar} alt=""/><div className={`message-bubble ${message.type!=='text'?'media-bubble':''}`}>{content}</div>{message.deliveryStatus==='failed'&&<span className="delivery-failed" title="对方拒收了这条消息">!</span>}</div>
 }
 
-function SentMaterialCard({card,onClick}){return <button className="sent-material-card" onClick={onClick}><div className="sent-card-cover"><img src={card.images?.[0]||card.image} alt={card.name}/><div><span>{card.eventTag||'其他'}</span><b>{card.exchangeMethod||'互换'}</b></div></div><div className="sent-card-copy"><header><strong>{card.name}</strong><em>{card.quantity||1}<small>份</small></em></header><p><CalendarDays size={11}/>{card.startTime?`${formatCardTime(card.startTime)} — ${formatCardTime(card.endTime)}`:card.time||'时间未填写'}</p><p><MapPin size={11}/>{card.location}</p></div></button>}
+function SentMaterialCard({card,onClick}){return <button className="sent-material-card" onClick={onClick}><div className="sent-card-cover"><LazyThumbnail src={card.images?.[0]||card.image} alt={card.name}/><div><span>{card.eventTag||'其他'}</span><b>{card.exchangeMethod||'互换'}</b></div></div><div className="sent-card-copy"><header><strong>{card.name}</strong><em>{card.quantity||1}<small>份</small></em></header><p><CalendarDays size={11}/>{card.startTime?`${formatCardTime(card.startTime)} — ${formatCardTime(card.endTime)}`:card.time||'时间未填写'}</p><p><MapPin size={11}/>{card.location}</p></div></button>}

@@ -62,6 +62,10 @@ const router = createBrowserRouter([
     element: <ProtectedRoute><CreatePost /></ProtectedRoute>
   },
   {
+    path: '/edit-post/:id',
+    element: <ProtectedRoute><CreatePost /></ProtectedRoute>
+  },
+  {
     path: '/chat/:id',
     element: <ProtectedRoute><ChatDetail /></ProtectedRoute>
   },
