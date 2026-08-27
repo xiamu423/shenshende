@@ -56,7 +56,7 @@ export default function PostDetail() {
     nav(`/chat/${chatId}`);
   };
 
-  return <div className="page-container post-detail-page animate-fade-in">
+  return <div className="page-container post-detail-page animate-fade-in" style={{ background: 'var(--bg)' }}>
     <TopHeader title="帖子详情" showBack/>
     <main className="post-detail-content">
       <article className="post-detail-sheet">
