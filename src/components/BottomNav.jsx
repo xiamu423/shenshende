@@ -1,11 +1,13 @@
-import { NavLink } from 'react-router-dom';
-import { useEffect } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
 import { Home, MessageCircle, User } from 'lucide-react';
 import { useMockData } from '../contexts/MockData';
 import './BottomNav.css';
 import './BottomNavUnread.css';
 
 export default function BottomNav() {
+  const location = useLocation();
+  const communityScrollRef = useRef(0);
   const { chats, refreshChats, isLoggedIn } = useMockData();
   const unreadCount = chats.reduce((total, chat) => total + Number(chat.unreadCount || 0), 0);
   useEffect(() => {
@@ -31,6 +33,13 @@ export default function BottomNav() {
           key={tab.path} 
           to={tab.path} 
           replace
+          state={tab.path === '/community' ? { communityScrollY: communityScrollRef.current } : undefined}
+          onClick={() => {
+            if (location.pathname === '/community' && tab.path !== '/community') {
+              communityScrollRef.current = window.scrollY;
+              window.dispatchEvent(new CustomEvent('community:leave'));
+            }
+          }}
           className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
         >
           <span className="nav-icon-wrap"><tab.icon className="nav-icon" size={24} />{tab.path === '/chat' && unreadCount > 0 && <span className="nav-unread-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>}</span>

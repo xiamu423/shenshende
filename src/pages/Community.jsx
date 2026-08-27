@@ -1,7 +1,7 @@
 import TopHeader from '../components/TopHeader';
 import PostCard from '../components/PostCard';
 import { useMockData } from '../contexts/MockData';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ArrowUp, CalendarRange, CircleDot, Filter, Repeat2, RotateCcw, Tags, X } from 'lucide-react';
@@ -21,6 +21,7 @@ let communityViewState = {
 export default function Community() {
   const { posts, postsHasMore, postsLoading, fetchPosts, isLoggedIn } = useMockData();
   const nav = useNavigate();
+  const location = useLocation();
   const [exchangeStatus, setExchangeStatus] = useState(communityViewState.exchangeStatus);
   const [startTime, setStartTime] = useState(communityViewState.startTime);
   const [endTime, setEndTime] = useState(communityViewState.endTime);
@@ -43,18 +44,37 @@ export default function Community() {
   }, [exchangeStatus, startTime, endTime, selectedTags, exchangeMethod, filters, timeError, fetchPosts]);
 
   useEffect(() => {
-    const restoreY = communityViewState.scrollY;
-    const restoreFrame = window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => window.scrollTo({ top: restoreY, behavior: 'auto' }));
-    });
-    const rememberPosition = () => { communityViewState.scrollY = window.scrollY; };
+    const storedY = Number.parseFloat(sessionStorage.getItem('community-scroll-y') || '0');
+    const routedY = Number(location.state?.communityScrollY || 0);
+    const restoreY = Math.max(communityViewState.scrollY, Number.isFinite(storedY) ? storedY : 0, routedY);
+    let leaving = false;
+    let restoring = restoreY > 0;
+    const restorePosition = () => window.scrollTo({ top: restoreY, behavior: 'auto' });
+    const restoreFrame = window.requestAnimationFrame(() => window.requestAnimationFrame(restorePosition));
+    // React Router and the browser can both apply their own scroll position just
+    // after the new tab has mounted. Retry briefly so our saved community
+    // position wins once the cached post list has been painted.
+    const restoreTimers = restoreY > 0
+      ? [80, 220, 420].map((delay) => window.setTimeout(restorePosition, delay))
+      : [];
+    const finishRestoreTimer = window.setTimeout(() => { restoring = false; }, restoreY > 0 ? 500 : 0);
+    const savePosition = () => {
+      communityViewState.scrollY = window.scrollY;
+      sessionStorage.setItem('community-scroll-y', String(window.scrollY));
+    };
+    const rememberPosition = () => { if (!leaving && !restoring) savePosition(); };
+    const rememberBeforeNavigation = () => { leaving = true; savePosition(); };
     window.addEventListener('scroll', rememberPosition, { passive: true });
+    window.addEventListener('community:leave', rememberBeforeNavigation);
     return () => {
       window.cancelAnimationFrame(restoreFrame);
-      rememberPosition();
+      restoreTimers.forEach(window.clearTimeout);
+      window.clearTimeout(finishRestoreTimer);
+      if (!leaving) savePosition();
       window.removeEventListener('scroll', rememberPosition);
+      window.removeEventListener('community:leave', rememberBeforeNavigation);
     };
-  }, []);
+  }, [location.state]);
 
   useEffect(() => {
     const target = loadMoreRef.current;
